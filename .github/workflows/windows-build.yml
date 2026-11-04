@@ -62,7 +62,7 @@ jobs:
       - name: Verify executable
         shell: pwsh
         run: |
-          $exe = "build/RSDKv5U.exe"
+          $exe = "build/Release/RSDKv5U.exe"
 
           if (-not (Test-Path $exe)) {
             Get-ChildItem build -Recurse -Filter *.exe
