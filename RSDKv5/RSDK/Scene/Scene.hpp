@@ -65,6 +65,7 @@ enum EngineStates {
     // Prolly origins-only, called by the ending so I assume this handles playing ending movies and returning to menu
     ENGINESTATE_GAME_FINISHED,
 #endif
+    ENGINESTATE_LAUNCHER = 0x20,
 };
 
 struct SceneInfo {
