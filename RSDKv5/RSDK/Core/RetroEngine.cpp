@@ -439,6 +439,10 @@ void RSDK::ProcessEngine()
     switch (sceneInfo.state) {
         default: break;
 
+        case ENGINESTATE_LAUNCHER:
+            DrawLauncher();
+            break;
+
         case ENGINESTATE_LOAD:
             if (!sceneInfo.listData) {
                 sceneInfo.state = ENGINESTATE_NONE;
