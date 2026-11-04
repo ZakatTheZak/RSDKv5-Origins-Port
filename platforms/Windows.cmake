@@ -4,6 +4,7 @@ add_executable(RetroEngine WIN32 ${RETRO_FILES})
 
 set(RETRO_SUBSYSTEM "DX9" CACHE STRING "The subsystem to use")
 option(USE_MINIAUDIO "Whether or not to use MiniAudio or default to XAudio." OFF)
+option(USE_SDL2_AUDIO "Use SDL2 for audio with DirectX rendering." OFF)
 
 set(DEP_PATH windows)
 
@@ -103,6 +104,23 @@ elseif(RETRO_SUBSYSTEM STREQUAL "SDL2")
     )
 else()
     message(FATAL_ERROR "RETRO_SUBSYSTEM must be one of DX9, DX11, OGL, VK, or SDL2")
+endif()
+
+if(USE_SDL2_AUDIO)
+    if(USE_MINIAUDIO)
+        message(FATAL_ERROR "USE_SDL2_AUDIO and USE_MINIAUDIO cannot be enabled together.")
+    endif()
+
+    if(NOT RETRO_SUBSYSTEM STREQUAL "SDL2")
+        find_package(SDL2 CONFIG REQUIRED)
+
+        target_link_libraries(RetroEngine
+            $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+            $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+        )
+    endif()
+
+    target_compile_definitions(RetroEngine PRIVATE RETRO_AUDIODEVICE_SDL2=1)
 endif()
 
 if(USE_MINIAUDIO)
