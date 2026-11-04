@@ -342,6 +342,98 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
     return 0;
 }
 
+static int32 launcherTopScroll    = 0;
+static int32 launcherBottomScroll = 0;
+
+static void DrawLauncherTriangle(int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3)
+{
+    Vector2 vertices[3];
+
+    vertices[0].x = x1 * 0x10000;
+    vertices[0].y = y1 * 0x10000;
+
+    vertices[1].x = x2 * 0x10000;
+    vertices[1].y = y2 * 0x10000;
+
+    vertices[2].x = x3 * 0x10000;
+    vertices[2].y = y3 * 0x10000;
+
+    DrawFace(vertices, 3, 255, 255, 255, 255, INK_NONE);
+}
+
+static void DrawLauncher()
+{
+    currentScreen = &screens[0];
+
+    int32 width  = currentScreen->size.x;
+    int32 height = currentScreen->size.y;
+
+    if (width <= 0 || height <= 0)
+        return;
+
+    // Полосы занимают по 10% высоты экрана
+    int32 bandHeight = height / 10;
+
+    // Размеры зубчатого края
+    int32 triangleWidth  = (bandHeight * 3) / 4;
+    int32 triangleHeight = bandHeight / 2;
+
+    if (triangleWidth < 8)
+        triangleWidth = 8;
+
+    if (triangleHeight < 4)
+        triangleHeight = 4;
+
+    // Верхняя полоса движется вправо
+    launcherTopScroll++;
+
+    if (launcherTopScroll >= triangleWidth)
+        launcherTopScroll = 0;
+
+    // Нижняя полоса движется влево
+    launcherBottomScroll--;
+
+    if (launcherBottomScroll < 0)
+        launcherBottomScroll = triangleWidth - 1;
+
+    // Зелёный фон
+    DrawRectangle(0, 0, width, height, 0x008000, 255, INK_NONE, true);
+
+    // Белые полосы
+    DrawRectangle(0, 0, width, bandHeight, 0xFFFFFF, 255, INK_NONE, true);
+
+    DrawRectangle(
+        0,
+        height - bandHeight,
+        width,
+        bandHeight,
+        0xFFFFFF,
+        255,
+        INK_NONE,
+        true
+    );
+
+    // Зубцы верхней полосы направлены вниз
+    for (int32 x = -triangleWidth + launcherTopScroll; x < width; x += triangleWidth) {
+        DrawLauncherTriangle(
+            x, bandHeight,
+            x + triangleWidth / 2, bandHeight + triangleHeight,
+            x + triangleWidth, bandHeight
+        );
+    }
+
+    // Зубцы нижней полосы направлены вверх
+    int32 bottomY = height - bandHeight;
+
+    for (int32 x = -triangleWidth + launcherBottomScroll; x < width; x += triangleWidth) {
+        DrawLauncherTriangle(
+            x, bottomY,
+            x + triangleWidth / 2, bottomY - triangleHeight,
+            x + triangleWidth, bottomY
+        );
+    }
+}
+
 void RSDK::ProcessEngine()
 {
     switch (sceneInfo.state) {
