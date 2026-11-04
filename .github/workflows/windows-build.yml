@@ -43,8 +43,8 @@ jobs:
           cmake -B build `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static `
-            -DRETRO_SUBSYSTEM=SDL2 `
-            -DUSE_MINIAUDIO=ON
+            -DRETRO_SUBSYSTEM=DX9 `
+            -DUSE_SDL2_AUDIO=ON
 
           if ($LASTEXITCODE -ne 0) {
             throw "CMake configuration failed"
