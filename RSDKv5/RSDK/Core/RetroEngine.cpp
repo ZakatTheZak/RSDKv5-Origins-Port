@@ -857,7 +857,10 @@ void RSDK::StartGameObjects()
     SetupFunctionTables();
     InitGameLink();
     LoadGameConfig();
+
+    sceneInfo.state = ENGINESTATE_LAUNCHER;
 }
+
 
 #if RETRO_USE_MOD_LOADER
 void RSDK::LoadGameXML(bool pal)
