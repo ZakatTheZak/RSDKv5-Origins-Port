@@ -380,19 +380,20 @@ static void DrawLauncher()
 
     if (triangleWidth < 8)
         triangleWidth = 8;
+    
+    // Ширина должна быть чётной, чтобы вершина была точно по центру
+    if (triangleWidth & 1)
+        triangleWidth++;
 
     if (triangleHeight < 4)
         triangleHeight = 4;
 
     // Верхняя полоса движется вправо
     launcherTopScroll++;
-
     if (launcherTopScroll >= triangleWidth)
         launcherTopScroll = 0;
-
-    // Нижняя полоса движется влево
+    
     launcherBottomScroll--;
-
     if (launcherBottomScroll < 0)
         launcherBottomScroll = triangleWidth - 1;
 
