@@ -347,7 +347,6 @@ static int32 launcherBottomScroll = 0;
 
 static void DrawLauncherTriangle(int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3)
 {
-    // Расстояние от вершины до основания
     int32 triangleHeight = y1 - y2;
 
     if (triangleHeight < 0)
@@ -356,21 +355,32 @@ static void DrawLauncherTriangle(int32 x1, int32 y1, int32 x2, int32 y2, int32 x
     if (triangleHeight <= 0)
         return;
 
-    // Рисуем треугольник горизонтальными строками
+    int32 leftWidth  = x2 - x1;
+    int32 rightWidth = x3 - x2;
+
+    if (leftWidth < 0)
+        leftWidth = -leftWidth;
+
+    if (rightWidth < 0)
+        rightWidth = -rightWidth;
+
+    int32 yDirection = (y1 > y2) ? 1 : -1;
+
     for (int32 row = 0; row <= triangleHeight; ++row) {
-        int32 xLeft = x2 + ((x1 - x2) * row) / triangleHeight;
-        int32 xRight = x2 + ((x3 - x2) * row) / triangleHeight;
-        int32 y = y2 + ((y1 - y2) * row) / triangleHeight;
+        int32 leftOffset =
+            (leftWidth * row + triangleHeight / 2) / triangleHeight;
 
-        int32 width = xRight - xLeft + 1;
+        int32 rightOffset =
+            (rightWidth * row + triangleHeight / 2) / triangleHeight;
 
-        if (width < 1)
-            width = 1;
+        int32 xLeft  = x2 - leftOffset;
+        int32 xRight = x2 + rightOffset;
+        int32 y = y2 + row * yDirection;
 
         DrawRectangle(
             xLeft,
             y,
-            width,
+            xRight - xLeft + 1,
             1,
             0xFFFFFF,
             255,
