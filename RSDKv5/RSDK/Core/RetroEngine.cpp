@@ -347,18 +347,37 @@ static int32 launcherBottomScroll = 0;
 
 static void DrawLauncherTriangle(int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3)
 {
-    Vector2 vertices[3];
+    // Расстояние от вершины до основания
+    int32 triangleHeight = y1 - y2;
 
-    vertices[0].x = x1 * 0x10000;
-    vertices[0].y = y1 * 0x10000;
+    if (triangleHeight < 0)
+        triangleHeight = -triangleHeight;
 
-    vertices[1].x = x2 * 0x10000;
-    vertices[1].y = y2 * 0x10000;
+    if (triangleHeight <= 0)
+        return;
 
-    vertices[2].x = x3 * 0x10000;
-    vertices[2].y = y3 * 0x10000;
+    // Рисуем треугольник горизонтальными строками
+    for (int32 row = 0; row <= triangleHeight; ++row) {
+        int32 xLeft = x2 + ((x1 - x2) * row) / triangleHeight;
+        int32 xRight = x2 + ((x3 - x2) * row) / triangleHeight;
+        int32 y = y2 + ((y1 - y2) * row) / triangleHeight;
 
-    DrawFace(vertices, 3, 255, 255, 255, 255, INK_NONE);
+        int32 width = xRight - xLeft + 1;
+
+        if (width < 1)
+            width = 1;
+
+        DrawRectangle(
+            xLeft,
+            y,
+            width,
+            1,
+            0xFFFFFF,
+            255,
+            INK_NONE,
+            true
+        );
+    }
 }
 
 static void DrawLauncher()
