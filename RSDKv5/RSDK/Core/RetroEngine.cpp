@@ -258,7 +258,7 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
                     // update device states and other stuff
                     ProcessInputDevices();
 
-                    if (engine.devMenu)
+                    if (engine.devMenu && sceneInfo.state != ENGINESTATE_LAUNCHER)
                         ProcessDebugCommands();
 
 #if RETRO_REV0U
