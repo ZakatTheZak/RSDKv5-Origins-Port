@@ -345,48 +345,66 @@ int32 RSDK::RunRetroEngine(int32 argc, char *argv[])
 static int32 launcherTopScroll    = 0;
 static int32 launcherBottomScroll = 0;
 
-static void DrawLauncherTriangle(int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3)
+static ImagePNG launcherTriangleImage;
+static bool launcherTriangleLoadAttempted = false;
+static bool launcherTriangleLoaded = false;
+
+static void DrawLauncherTriangleSprite(int32 x, int32 y, bool32 flipY)
 {
-    int32 triangleHeight = y1 - y2;
+    if (!launcherTriangleLoadAttempted) {
+        launcherTriangleLoadAttempted = true;
 
-    if (triangleHeight < 0)
-        triangleHeight = -triangleHeight;
+        launcherTriangleLoaded =
+            launcherTriangleImage.Load("Data/Launcher/Sprites/Triangle.png", false);
+    }
 
-    if (triangleHeight <= 0)
+    if (!launcherTriangleLoaded)
         return;
 
-    int32 leftWidth  = x2 - x1;
-    int32 rightWidth = x3 - x2;
+    color *pixels = (color *)launcherTriangleImage.pixels;
 
-    if (leftWidth < 0)
-        leftWidth = -leftWidth;
+    const int32 width  = launcherTriangleImage.width;
+    const int32 height = launcherTriangleImage.height;
 
-    if (rightWidth < 0)
-        rightWidth = -rightWidth;
+    for (int32 row = 0; row < height; ++row) {
+        int32 sourceY = flipY ? height - 1 - row : row;
+        int32 column  = 0;
 
-    int32 yDirection = (y1 > y2) ? 1 : -1;
+        while (column < width) {
+            uint8 alpha = (pixels[sourceY * width + column] >> 24) & 0xFF;
 
-    for (int32 row = 0; row <= triangleHeight; ++row) {
-        int32 leftOffset =
-            (leftWidth * row + triangleHeight / 2) / triangleHeight;
+            if (alpha == 0) {
+                ++column;
+                continue;
+            }
 
-        int32 rightOffset =
-            (rightWidth * row + triangleHeight / 2) / triangleHeight;
+            int32 start = column;
 
-        int32 xLeft  = x2 - leftOffset;
-        int32 xRight = x2 + rightOffset;
-        int32 y = y2 + row * yDirection;
+            while (column < width) {
+                alpha = (pixels[sourceY * width + column] >> 24) & 0xFF;
 
-        DrawRectangle(
-            xLeft,
-            y,
-            xRight - xLeft + 1,
-            1,
-            0xFFFFFF,
-            255,
-            INK_NONE,
-            true
-        );
+                if (alpha == 0)
+                    break;
+
+                ++column;
+            }
+
+            int32 runWidth = column - start;
+
+            uint8 runAlpha =
+                (pixels[sourceY * width + start] >> 24) & 0xFF;
+
+            DrawRectangle(
+                x + start,
+                y + row,
+                runWidth,
+                1,
+                0x1E201E,
+                runAlpha,
+                runAlpha == 255 ? INK_NONE : INK_ALPHA,
+                true
+            );
+        }
     }
 }
 
@@ -404,8 +422,8 @@ static void DrawLauncher()
     int32 bandHeight = height / 10;
 
     // Размеры зубчатого края
-    int32 triangleWidth  = (bandHeight * 3) / 4;
-    int32 triangleHeight = bandHeight / 2;
+    int32 triangleWidth  = 32;
+    int32 triangleHeight = 32;
 
     if (triangleWidth < 8)
         triangleWidth = 8;
@@ -430,14 +448,14 @@ static void DrawLauncher()
     DrawRectangle(0, 0, width, height, 0x008000, 255, INK_NONE, true);
 
     // Белые полосы
-    DrawRectangle(0, 0, width, bandHeight, 0xFFFFFF, 255, INK_NONE, true);
+    DrawRectangle(0, 0, width, bandHeight, 0x1E201E, 255, INK_NONE, true);
 
     DrawRectangle(
         0,
         height - bandHeight,
         width,
         bandHeight,
-        0xFFFFFF,
+        0x1E201E,
         255,
         INK_NONE,
         true
@@ -445,22 +463,14 @@ static void DrawLauncher()
 
     // Зубцы верхней полосы направлены вниз
     for (int32 x = -triangleWidth + launcherTopScroll; x < width; x += triangleWidth) {
-        DrawLauncherTriangle(
-            x, bandHeight,
-            x + triangleWidth / 2, bandHeight + triangleHeight,
-            x + triangleWidth, bandHeight
-        );
+        DrawLauncherTriangleSprite(x, bandHeight, true);
     }
 
     // Зубцы нижней полосы направлены вверх
     int32 bottomY = height - bandHeight;
-
+    
     for (int32 x = -triangleWidth + launcherBottomScroll; x < width; x += triangleWidth) {
-        DrawLauncherTriangle(
-            x, bottomY,
-            x + triangleWidth / 2, bottomY - triangleHeight,
-            x + triangleWidth, bottomY
-        );
+        DrawLauncherTriangleSprite(x, bottomY - triangleHeight, false);
     }
 }
 
